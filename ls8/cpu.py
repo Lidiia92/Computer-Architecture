@@ -72,4 +72,32 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+
+        
+
+        running = True
+
+        while running:
+            register = self.memory[self.pc]
+            operand_a = self.memory[self.pc + 1]
+            operand_b = self.memory[self.pc + 2]
+
+
+            #HLT: halt the CPU and exit the emulator.
+            if register == 0b00000001:
+                running = False
+
+            #LDI: load "immediate", store a value in a register, or "set this register to this value".
+            elif register == 0b10000010:
+                self.memory[operand_b] = operand_a 
+                register += 3
+                self.pc = register
+
+            #PRN: a pseudo-instruction that prints the numeric value stored in a register.
+            elif register == 0b01000111:
+                print(register[operand_a]) # Print contents of that register
+                pc += 2
+
+            else:
+                print(f"Unknown instruction: {register}")
+                sys.exit(1)
