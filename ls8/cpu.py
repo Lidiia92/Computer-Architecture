@@ -37,7 +37,7 @@ class CPU:
         ]
 
         for instruction in program:
-            self.ram[address] = instruction
+            self.memory[address] = instruction
             address += 1
 
 
@@ -45,7 +45,7 @@ class CPU:
         """ALU operations."""
 
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
+            self.registers[reg_a] += self.registers[reg_b]
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -66,37 +66,39 @@ class CPU:
         ), end='')
 
         for i in range(8):
-            print(" %02X" % self.reg[i], end='')
+            print(" %02X" % self.registers[i], end='')
 
         print()
 
     def run(self):
         """Run the CPU."""
 
-        
+        operations = {
+            "HLT":  0b00000001,
+            "LDI": 0b10000010,
+            "PRN": 0b01000111
+        }
 
         running = True
 
         while running:
             register = self.memory[self.pc]
-            operand_a = self.memory[self.pc + 1]
-            operand_b = self.memory[self.pc + 2]
-
-
-            #HLT: halt the CPU and exit the emulator.
-            if register == 0b00000001:
-                running = False
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
 
             #LDI: load "immediate", store a value in a register, or "set this register to this value".
-            elif register == 0b10000010:
-                self.memory[operand_b] = operand_a 
-                register += 3
-                self.pc = register
+            if register == operations["LDI"]:
+                self.registers[operand_a] = operand_b 
+                self.pc += 3
+
+            #HLT: halt the CPU and exit the emulator.
+            elif register == operations["HLT"]:
+                running = False
 
             #PRN: a pseudo-instruction that prints the numeric value stored in a register.
-            elif register == 0b01000111:
-                print(register[operand_a]) # Print contents of that register
-                pc += 2
+            elif register == operations["PRN"]:
+                print("PRN", self.registers[operand_a]) # Print contents of the memory
+                self.pc += 2
 
             else:
                 print(f"Unknown instruction: {register}")
