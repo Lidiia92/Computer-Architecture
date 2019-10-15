@@ -2,6 +2,11 @@
 
 import sys
 
+HLT =  0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+MUL = 0b10100010
+
 class CPU:
     """Main CPU class."""
 
@@ -13,6 +18,7 @@ class CPU:
         #Internal registers
         self.pc = 0
 
+
     def ram_read(self, address):
         return self.memory[address]
 
@@ -22,31 +28,39 @@ class CPU:
     def load(self):
         """Load a program into memory."""
 
-        address = 0
+        try:
+            address = 0
+        
+            with open(sys.argv[1]) as f:
+                for line in f:
 
-        # For now, we've just hardcoded a program:
+                    # Process comments:
+                    # Ignore anything after a # symbol
+                    comment_split = line.split("#")
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+                    # Convert any numbers from binary strings to integers
+                    num = comment_split[0].strip()
+                    try:
+                        val = int(num)
+                    except ValueError:
+                        continue
+                    print(num)
 
-        for instruction in program:
-            self.memory[address] = instruction
-            address += 1
+                    self.memory[address] = val
+                    address += 1
 
-
+        except FileNotFoundError:
+            print(f"{sys.argv[0]}: {sys.argv[1]} not found")
+            sys.exit(2)
+    
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
         if op == "ADD":
             self.registers[reg_a] += self.registers[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.registers[reg_a] *= self.registers[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -70,13 +84,15 @@ class CPU:
 
         print()
 
+
     def run(self):
         """Run the CPU."""
 
         operations = {
-            "HLT":  0b00000001,
-            "LDI": 0b10000010,
-            "PRN": 0b01000111
+            "HLT":  HLT,
+            "LDI": LDI,
+            "PRN": PRN,
+            "MUL": MUL
         }
 
         running = True
@@ -99,6 +115,10 @@ class CPU:
             elif register == operations["PRN"]:
                 print("PRN", self.registers[operand_a]) # Print contents of the memory
                 self.pc += 2
+
+            elif register == operations["MUL"]:
+                self.alu("MUL", operand_a, operand_b)
+                self.pc += 3 
 
             else:
                 print(f"Unknown instruction: {register}")
