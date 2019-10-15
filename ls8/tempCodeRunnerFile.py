@@ -1,1 +1,1 @@
- "PRN": 0b01000111,
+print(sys.argv)
