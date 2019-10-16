@@ -6,6 +6,8 @@ HLT =  0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
+POP = 0b01000110
+PUSH = 0b01000101
 
 class CPU:
     """Main CPU class."""
@@ -17,6 +19,8 @@ class CPU:
 
         #Internal registers
         self.pc = 0
+
+        self.sp = 7
 
 
     def ram_read(self, address):
@@ -112,7 +116,9 @@ class CPU:
             "HLT":  HLT,
             "LDI": LDI,
             "PRN": PRN,
-            "MUL": MUL
+            "MUL": MUL,
+            "POP": POP,
+            "PUSH": PUSH,
         }
 
         running = True
@@ -140,6 +146,25 @@ class CPU:
                 result = self.alu("MUL", operand_a, operand_b)
                 print("MUL", result)
                 self.pc += 3 
+                
+            elif register == operations["PUSH"]:
+                value = self.registers[operand_a]
+                # Decrement the SP.
+                self.registers[self.sp] -= 1
+                # Copy the value in the given register to the address pointed to by SP.
+                self.memory[self.registers[self.sp]] = value
+                self.pc += 2
+                
+            elif register == operations["POP"]:
+
+                value = self.memory[self.registers[self.sp]]
+                # Copy the value from the address pointed to by SP to the given register.
+                self.registers[operand_a] = value
+                # Increment SP.
+                self.registers[self.sp] += 1
+                self.pc += 2
+
+
 
             else:
                 print(f"Unknown instruction: {register}")
