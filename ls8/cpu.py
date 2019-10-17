@@ -10,6 +10,7 @@ POP = 0b01000110
 PUSH = 0b01000101
 CALL = 0b01010000
 RET = 0b00010001
+ADD = 0b10100000
 
 class CPU:
     """Main CPU class."""
@@ -121,6 +122,9 @@ class CPU:
             "MUL": MUL,
             "POP": POP,
             "PUSH": PUSH,
+            "CALL": CALL,
+            "RET": RET,
+            "ADD": ADD,
         }
 
         running = True
@@ -166,6 +170,18 @@ class CPU:
                 self.registers[self.sp] += 1
                 self.pc += 2
 
+            elif register == operations["CALL"]:
+                self.registers[self.sp] -= 1
+                self.memory[self.registers[self.sp]] = self.pc + 2
+                self.pc = self.registers[operand_a]
+
+            elif register == operations["RET"]:
+                self.pc = self.memory[self.registers[self.sp]]
+                self.registers[self.sp] += 1
+
+            elif register == operations["ADD"]:
+                self.registers[operand_a] += self.registers[operand_b] 
+                self.pc += 3
 
 
             else:
