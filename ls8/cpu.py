@@ -11,6 +11,10 @@ PUSH = 0b01000101
 CALL = 0b01010000
 RET = 0b00010001
 ADD = 0b10100000
+CMP = 0b10100111
+JMP = 0b01010100
+JEQ = 0b01010101
+JNE = 0b01010110
 
 class CPU:
     """Main CPU class."""
@@ -24,6 +28,7 @@ class CPU:
         self.pc = 0
 
         self.sp = 7
+        self.flags = 0
 
 
     def ram_read(self, address):
@@ -88,6 +93,16 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.registers[reg_a] *= self.registers[reg_b]
+
+        elif op == "CMP":
+            #Flags # 0b00000LGE
+            if self.registers[reg_a] == self.registers[reg_b]:
+                self.flags = 0b00000001
+            elif self.registers[reg_a] < self.registers[reg_b]:
+                self.flags = 0b0000100
+            elif self.registers[reg_a] > self.registers[reg_b]:
+                self.flags = 0b0000010
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -125,6 +140,10 @@ class CPU:
             "CALL": CALL,
             "RET": RET,
             "ADD": ADD,
+            "CMP": CMP,
+            "JMP": JMP,
+            "JEQ": JEQ,
+            "JNE": JNE,
         }
 
         running = True
@@ -182,6 +201,8 @@ class CPU:
             elif register == operations["ADD"]:
                 self.registers[operand_a] += self.registers[operand_b] 
                 self.pc += 3
+
+
 
 
             else:
