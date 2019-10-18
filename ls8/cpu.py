@@ -202,7 +202,24 @@ class CPU:
                 self.registers[operand_a] += self.registers[operand_b] 
                 self.pc += 3
 
+            elif register == operations["CMP"]:
+                self.alu("CMP", operand_a, operand_b)
+                self.pc += 3
 
+            elif register == operations["JMP"]:
+                self.pc = self.registers[operand_a]
+
+            elif register == operations["JNE"]:
+                if self.flags != 0b00000001:
+                    self.pc = self.registers[operand_a]
+                else:
+                    self.pc += 2
+
+            elif register == operations["JEQ"]:
+                if self.flags == 0b00000001:
+                    self.pc = self.registers[operand_a]
+                else:
+                    self.pc += 2
 
 
             else:
